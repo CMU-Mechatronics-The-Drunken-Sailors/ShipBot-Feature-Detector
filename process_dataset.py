@@ -19,7 +19,7 @@ labels_list = yaml.load(
 )["names"]
 
 
-def process_video(file_name, file_ext):
+def process_video(idx, file_name, file_ext):
     # Read video
     cap = cv2.VideoCapture(file_name + file_ext)
 
@@ -70,11 +70,11 @@ def process_video(file_name, file_ext):
             final_dir = os.path.join(dir, "test" if frame_ind % 4 == 0 else "train")
 
             # Write to file
-            with open(os.path.join(final_dir, f"{frame_ind}.txt"), "w") as f:
+            with open(os.path.join(final_dir, f"{idx}_{frame_ind}.txt"), "w") as f:
                 f.write(out_str)
 
             # Write image to file
-            cv2.imwrite(os.path.join(final_dir, f"{frame_ind}.jpg"), frame)
+            cv2.imwrite(os.path.join(final_dir, f"{idx}_{frame_ind}.jpg"), frame)
 
         frame_ind += 1
 
@@ -85,15 +85,18 @@ def process_video(file_name, file_ext):
 if __name__ == "__main__":
     video_list = []
 
+    idx = 0
     for root, subdirs, files in os.walk(os.path.join("data", DATASET_NAME)):
         for filename in files:
+
             file_path = os.path.join(root, filename)
             file_name, file_ext = os.path.splitext(file_path)
 
             # If the file is an video...
             if file_ext == ".MOV" or file_ext == ".mp4":
                 # Add to list
-                video_list.append((file_name, file_ext))
+                video_list.append((idx, file_name, file_ext))
+                idx += 1
 
         # Process images in parallel
         with Pool() as pool:
