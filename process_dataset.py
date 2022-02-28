@@ -86,17 +86,16 @@ if __name__ == "__main__":
     video_list = []
 
     idx = 0
-    for root, subdirs, files in os.walk(os.path.join("data", DATASET_NAME)):
-        for filename in files:
+    root = os.path.join("data", DATASET_NAME)
+    for filename in os.listdir(root):
+        file_path = os.path.join(root, filename)
+        file_name, file_ext = os.path.splitext(file_path)
 
-            file_path = os.path.join(root, filename)
-            file_name, file_ext = os.path.splitext(file_path)
-
-            # If the file is an video...
-            if file_ext == ".MOV" or file_ext == ".mp4":
-                # Add to list
-                video_list.append((idx, file_name, file_ext))
-                idx += 1
+        # If the file is an video...
+        if file_ext == ".MOV" or file_ext == ".mp4":
+            # Add to list
+            video_list.append((idx, file_name, file_ext))
+            idx += 1
 
     # Process images in parallel
     with Pool() as pool:
