@@ -98,6 +98,6 @@ if __name__ == "__main__":
                 video_list.append((idx, file_name, file_ext))
                 idx += 1
 
-        # Process images in parallel
-        with Pool() as pool:
-            pool.starmap(process_video, video_list)
+    # Process images in parallel
+    with Pool() as pool:
+        pool.starmap(process_video, video_list)
