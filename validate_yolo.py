@@ -11,7 +11,7 @@ from calc_bounding_rect import (
 )
 
 DATASET_NAME = "breaker"
-WEIGHTS = "runs/train/exp6/weights/best.pt"
+WEIGHTS = "good_weights/simple_500_epochs.pt"
 
 if __name__ == "__main__":
     # Load model

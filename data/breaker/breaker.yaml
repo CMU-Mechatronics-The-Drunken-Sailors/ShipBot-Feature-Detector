@@ -6,4 +6,4 @@ val: data/breaker/test/
 nc: 2
 
 # class names
-names: ['up', 'down']
+names: ['UP', 'DOWN']

@@ -57,8 +57,8 @@ def detect_squares(threshold_img):
     )
 
     # Filter squares by area and aspect ratio
-    squares = [cv2.minAreaRect(c) for c in contours if cv2.contourArea(c) > 50]
-    squares = [s for s in squares if 0.6 <= s[1][0] / s[1][1] <= 1.7]
+    squares = [cv2.minAreaRect(c) for c in contours if cv2.contourArea(c) > 30]
+    squares = [s for s in squares if 0.3 <= s[1][0] / s[1][1] <= 1.8]
     # squares = [cv2.boxPoints(sq) for sq in squares]
 
     return squares
@@ -159,9 +159,9 @@ if __name__ == "__main__":
 
         rects = []
 
-        for k in ["fiducial_yellow"]:
+        for k in ["green"]:
             thresh_img = threshold_for_color(hsv_img, k)
-            frame = remove_fiducials(frame, thresh_img)
+            # frame = remove_fiducials(frame, thresh_img)
 
             # Find contours
             squares = detect_squares(thresh_img)

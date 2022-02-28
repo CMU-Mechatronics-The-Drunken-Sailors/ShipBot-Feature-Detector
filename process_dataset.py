@@ -25,8 +25,9 @@ def process_video(file_name, file_ext):
 
     # Get label
     dir = os.path.dirname(file_name)
-    label = os.path.basename(file_name).split("_")[0]
-    label_idx = labels_list.index(label)
+    labels = os.path.basename(file_name).split("_")[0:3]
+    label_idxs = [labels_list.index(label) for label in labels]
+    colors = ["pink", "red", "green"]
 
     # For each frame...
     frame_ind = 0
@@ -38,32 +39,44 @@ def process_video(file_name, file_ext):
         if not ret:
             break
 
+        out_str = ""
         hsv_img = preprocess_frame(frame)
-        thresh_img = threshold_for_color(hsv_img, "fiducial_yellow")
-        frame = remove_fiducials(frame, thresh_img)
-        squares = detect_squares(thresh_img)
-        rect = convert_fiducial_squares_to_bounding_rect(squares)
+        skip_frame = False
 
-        if rect is not None:
-            # Convert rect from x1,y1,x2,y2 to YOLO coords (center x, center y, width, height)
-            x, y, w, h = cv2.boundingRect(rect)
-            x = x + w / 2
-            y = y + h / 2
+        for label, label_idx, color in zip(labels, label_idxs, colors):
+            thresh_img = threshold_for_color(hsv_img, color)
+            frame = remove_fiducials(frame, thresh_img)
+            squares = detect_squares(thresh_img)
+            rect = convert_fiducial_squares_to_bounding_rect(squares)
 
-            # Normalize to [0,1]
-            x = x / frame.shape[1]
-            y = y / frame.shape[0]
-            w = w / frame.shape[1]
-            h = h / frame.shape[0]
+            if rect is None:
+                skip_frame = True
+                break
+            else:
+                # Convert rect from x1,y1,x2,y2 to YOLO coords (center x, center y, width, height)
+                x, y, w, h = cv2.boundingRect(rect)
+                x = x + w / 2
+                y = y + h / 2
+
+                # Normalize to [0,1]
+                x = x / frame.shape[1]
+                y = y / frame.shape[0]
+                w = w / frame.shape[1]
+                h = h / frame.shape[0]
+
+                out_str += f"{label_idx} {x:.4f} {y:.4f} {w:.4f} {h:.4f}\n"
+
+        if not skip_frame:
+            final_dir = os.path.join(dir, "test" if frame_ind % 4 == 0 else "train")
 
             # Write to file
-            with open(os.path.join(dir, f"{label}_{frame_ind}.txt"), "w") as f:
-                f.write(f"{label_idx} {x} {y} {w} {h}")
+            with open(os.path.join(final_dir, f"{frame_ind}.txt"), "w") as f:
+                f.write(out_str)
 
             # Write image to file
-            cv2.imwrite(os.path.join(dir, f"{label}_{frame_ind}.jpg"), frame)
+            cv2.imwrite(os.path.join(final_dir, f"{frame_ind}.jpg"), frame)
 
-            frame_ind += 1
+        frame_ind += 1
 
     cap.release()
 
@@ -72,16 +85,15 @@ def process_video(file_name, file_ext):
 if __name__ == "__main__":
     video_list = []
 
-    for subdir in ["train", "test"]:
-        for root, subdirs, files in os.walk(os.path.join("data", DATASET_NAME, subdir)):
-            for filename in files:
-                file_path = os.path.join(root, filename)
-                file_name, file_ext = os.path.splitext(file_path)
+    for root, subdirs, files in os.walk(os.path.join("data", DATASET_NAME)):
+        for filename in files:
+            file_path = os.path.join(root, filename)
+            file_name, file_ext = os.path.splitext(file_path)
 
-                # If the file is an video...
-                if file_ext == ".MOV":
-                    # Add to list
-                    video_list.append((file_name, file_ext))
+            # If the file is an video...
+            if file_ext == ".MOV" or file_ext == ".mp4":
+                # Add to list
+                video_list.append((file_name, file_ext))
 
         # Process images in parallel
         with Pool() as pool:

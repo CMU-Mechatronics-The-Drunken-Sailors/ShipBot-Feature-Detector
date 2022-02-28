@@ -145,10 +145,10 @@ if __name__ == "__main__":
         color_max_hsv = {}
 
 
-    for k in ["fiducial_yellow"]:
-        if k in color_min_hsv and k in color_max_hsv:
-            (low_H, low_S, low_V) = color_min_hsv[k]
-            (high_H, high_S, high_V) = color_max_hsv[k]
+    for col in ["red", "pink", "green"]:
+        if col in color_min_hsv and col in color_max_hsv:
+            (low_H, low_S, low_V) = color_min_hsv[col]
+            (high_H, high_S, high_V) = color_max_hsv[col]
         cv2.setTrackbarPos(low_H_name, window_detection_name, low_H)
         cv2.setTrackbarPos(high_H_name, window_detection_name, high_H)
         cv2.setTrackbarPos(low_S_name, window_detection_name, low_S)
@@ -157,7 +157,10 @@ if __name__ == "__main__":
         cv2.setTrackbarPos(high_V_name, window_detection_name, high_V)
 
         while True:
-            # Read frame
+            # Read frame (skip a few frames so we can seek the video faster)
+            for _ in range(5):
+                cap.grab()
+
             ret, frame = cap.read_calib() if args.use_calib else cap.read()
             if not ret:
                 cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
@@ -165,6 +168,9 @@ if __name__ == "__main__":
 
             if frame is None:
                 break
+
+            # Resize frame
+            frame = cv2.resize(frame, (640, 360))
 
             frame_HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
@@ -181,17 +187,20 @@ if __name__ == "__main__":
                     frame_HSV, (low_H, low_S, low_V), (high_H, high_S, high_V)
                 )
 
+            morph_ellipse = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+            frame_threshold = cv2.morphologyEx(frame_threshold, cv2.MORPH_OPEN, morph_ellipse)
+
             frame_combined = cv2.max(
                 frame, np.repeat(frame_threshold[:, :, np.newaxis], 3, axis=2)
             )
             frame_with_text = cv2.putText(
                 frame_combined,
-                f"Adjust sliders to select only {k}:",
+                f"Adjust sliders to select only {col}:",
                 (10, 50),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                2,
+                0.75,
                 (100, 100, 100),
-                5,
+                1,
             )
 
             cv2.imshow(window_detection_name, frame_with_text)
@@ -200,8 +209,8 @@ if __name__ == "__main__":
             if key == ord("q") or key == 27:
                 break
 
-        color_min_hsv[k] = [low_H, low_S, low_V]
-        color_max_hsv[k] = [high_H, high_S, high_V]
+        color_min_hsv[col] = [low_H, low_S, low_V]
+        color_max_hsv[col] = [high_H, high_S, high_V]
 
     # Save the mean and standard deviation values to a pickle file
     with open("hsv_calibration_data.pkl", "wb") as f:
