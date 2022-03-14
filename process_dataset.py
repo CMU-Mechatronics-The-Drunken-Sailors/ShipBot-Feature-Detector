@@ -29,6 +29,8 @@ def process_video(idx, file_name, file_ext):
     label_idxs = [labels_list.index(label) for label in labels]
     colors = ["pink", "red", "green"]
 
+    video_ind = int(os.path.basename(file_name).split("_")[-1])
+
     # For each frame...
     frame_ind = 0
     while cap.isOpened():
@@ -44,7 +46,7 @@ def process_video(idx, file_name, file_ext):
         skip_frame = False
 
         for label, label_idx, color in zip(labels, label_idxs, colors):
-            thresh_img = threshold_for_color(hsv_img, color)
+            thresh_img = threshold_for_color(hsv_img, color, calib_num=video_ind)
             frame = remove_fiducials(frame, thresh_img)
             squares = detect_squares(thresh_img)
             rect = convert_fiducial_squares_to_bounding_rect(squares)

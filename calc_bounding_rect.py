@@ -5,8 +5,11 @@ import argparse
 
 from video_capture_threading import VideoCaptureThreading as VideoCapture
 
-with open("hsv_calibration_data.pkl", "rb") as f:
-    [color_min_hsv, color_max_hsv] = pickle.load(f)
+color_calib_hsvs = []
+
+for ind in range(1, 4):
+    with open(f"hsv_calibration_data_{ind}.pkl", "rb") as f:
+        color_calib_hsvs.append(pickle.load(f))
 
 
 def preprocess_frame(frame):
@@ -20,7 +23,9 @@ def preprocess_frame(frame):
     return hsv_img
 
 
-def threshold_for_color(hsv_img, color):
+def threshold_for_color(hsv_img, color, calib_num=1):
+    [color_min_hsv, color_max_hsv] = color_calib_hsvs[calib_num-1]
+
     (low_H, low_S, low_V) = color_min_hsv[color]
     (high_H, high_S, high_V) = color_max_hsv[color]
     if low_H > high_H:
