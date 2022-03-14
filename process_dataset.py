@@ -67,7 +67,7 @@ def process_video(idx, file_name, file_ext):
                 out_str += f"{label_idx} {x:.4f} {y:.4f} {w:.4f} {h:.4f}\n"
 
         if not skip_frame:
-            final_dir = os.path.join(dir, "test" if frame_ind % 4 == 0 else "train")
+            final_dir = os.path.join(dir, "test" if frame_ind % 6 == 0 else "train")
 
             # Write to file
             with open(os.path.join(final_dir, f"{idx}_{frame_ind}.txt"), "w") as f:
