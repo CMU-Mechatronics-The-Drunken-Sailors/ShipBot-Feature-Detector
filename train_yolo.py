@@ -1,7 +1,7 @@
 import os
 from yolov5 import train
 
-DATASET_NAME = "breaker"
+DATASET_NAME = "shipbot"
 
 if __name__ == "__main__":
     train.run(

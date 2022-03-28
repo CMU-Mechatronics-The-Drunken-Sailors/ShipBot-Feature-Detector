@@ -145,7 +145,7 @@ if __name__ == "__main__":
         color_max_hsv = {}
 
 
-    for col in ["red", "pink", "green"]:
+    for col in ["blue", "blue_liberal"]:
         if col in color_min_hsv and col in color_max_hsv:
             (low_H, low_S, low_V) = color_min_hsv[col]
             (high_H, high_S, high_V) = color_max_hsv[col]
@@ -187,8 +187,8 @@ if __name__ == "__main__":
                     frame_HSV, (low_H, low_S, low_V), (high_H, high_S, high_V)
                 )
 
-            morph_ellipse = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-            frame_threshold = cv2.morphologyEx(frame_threshold, cv2.MORPH_OPEN, morph_ellipse)
+            morph_ellipse = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (17, 17))
+            frame_threshold = cv2.morphologyEx(frame_threshold, cv2.MORPH_CLOSE, morph_ellipse)
 
             frame_combined = cv2.max(
                 frame, np.repeat(frame_threshold[:, :, np.newaxis], 3, axis=2)

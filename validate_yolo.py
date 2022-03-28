@@ -10,8 +10,9 @@ from calc_bounding_rect import (
     remove_fiducials,
 )
 
-DATASET_NAME = "breaker"
-WEIGHTS = "good_weights/large_dataset_1.pt"
+DATASET_NAME = "shipbot"
+# WEIGHTS = "good_weights/500_epochs_both_panels.pt"
+WEIGHTS = "runs/train/exp/weights/best.pt"
 
 if __name__ == "__main__":
     # Load model
@@ -27,7 +28,7 @@ if __name__ == "__main__":
         file_name, file_ext = os.path.splitext(file_path)
 
         # If the file is an video...
-        if file_ext == ".MOV" or file_ext == ".mp4":
+        if (file_ext == ".MOV" or file_ext == ".mp4") and "SPIGOTTOPVIEW" in file_name:
             # Add to list
             video_list.append((file_name, file_ext))
 
@@ -37,7 +38,7 @@ if __name__ == "__main__":
 
         # For each frame...
         while True:
-            for _ in range(100):
+            for _ in range(10):
                 video.grab()
 
             # Read frame
@@ -46,6 +47,9 @@ if __name__ == "__main__":
             # If the frame is empty...
             if frame is None:
                 break
+
+            # Resize frame to 640x480
+            frame = cv2.resize(frame, (640, 360))
 
             results = model(frame)
             imgs = results.render()
